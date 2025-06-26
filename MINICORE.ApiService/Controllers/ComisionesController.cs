@@ -1,83 +1,46 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MINICORE.ApiService.Models;
+using MINICORE.ApiService.Services;
+using MINICORE.ApiService.DTos;
 
 namespace MINICORE.ApiService.Controllers
 {
-    public class ComisionesController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ComisionesController : ControllerBase
     {
-        // GET: ComisionesController
-        public ActionResult Index()
+        private readonly ComisionService _comisionService;
+
+        public ComisionesController(ComisionService comisionService)
         {
-            return View();
+            _comisionService = comisionService;
         }
 
-        // GET: ComisionesController/Details/5
-        public ActionResult Details(int id)
+        // Calcular la comisión para un vendedor en un rango de fechas
+        [HttpPost("calcular")]
+        public ActionResult<ComisionResponseDTO> CalcularComision([FromBody] ComisionRequestDTO request)
         {
-            return View();
-        }
-
-        // GET: ComisionesController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: ComisionesController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
+            // Validar que las fechas son correctas
+            if (request.FechaInicio > request.FechaFin)
             {
-                return RedirectToAction(nameof(Index));
+                return BadRequest("La fecha de inicio no puede ser posterior a la fecha de fin.");
             }
-            catch
-            {
-                return View();
-            }
-        }
 
-        // GET: ComisionesController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
+            // Llamar al servicio para calcular la comisión
+            decimal comision = _comisionService.CalcularComision(request.VendedorId, request.FechaInicio, request.FechaFin);
 
-        // POST: ComisionesController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
+            if (comision == 0)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound("No se encontraron ventas o no se encontró una regla de comisión para las fechas proporcionadas.");
             }
-            catch
-            {
-                return View();
-            }
-        }
 
-        // GET: ComisionesController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+            // Retornar la comisión calculada en un DTO
+            var response = new ComisionResponseDTO
+            {
+                Comision = comision
+            };
 
-        // POST: ComisionesController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return Ok(response);
         }
     }
 }
