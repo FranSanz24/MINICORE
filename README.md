@@ -50,7 +50,7 @@ Vistas: interfaz en Next.js + Tailwind
 
 ## 🎥 Video explicativo
 
-Ver explicación en YouTube (aquí iría tu enlace)
+Ver explicación en YouTube (https://youtu.be/dIjR1g9o0-E)
 
 ---
 
